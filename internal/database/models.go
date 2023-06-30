@@ -5,16 +5,16 @@
 package database
 
 import (
-	"database/sql"
+	"time"
 )
 
 type AdminUser struct {
 	ID           int32
-	FirstName    sql.NullString
-	LastName     sql.NullString
-	BodyWeight   sql.NullString
-	Username     sql.NullString
-	Email        sql.NullString
-	Password     sql.NullString
-	Lastloggedin sql.NullTime
+	FirstName    string
+	LastName     string
+	BodyWeight   string
+	Username     string
+	Email        string
+	Password     string
+	Lastloggedin time.Time
 }

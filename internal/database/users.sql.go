@@ -7,29 +7,27 @@ package database
 
 import (
 	"context"
-	"database/sql"
+	"time"
 )
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO "Admin"."Users" (id, first_name, last_name, body_weight, username, email, password, lastLoggedIn)
-values($1, $2, $3, $4, $5, $6, $7, $8)
+INSERT INTO "Admin"."Users" (first_name, last_name, body_weight, username, email, password, lastLoggedIn)
+values($1, $2, $3, $4, $5, $6, $7)
 RETURNING id, first_name, last_name, body_weight, username, email, password, lastloggedin
 `
 
 type CreateUserParams struct {
-	ID           int32
-	FirstName    sql.NullString
-	LastName     sql.NullString
-	BodyWeight   sql.NullString
-	Username     sql.NullString
-	Email        sql.NullString
-	Password     sql.NullString
-	Lastloggedin sql.NullTime
+	FirstName    string
+	LastName     string
+	BodyWeight   string
+	Username     string
+	Email        string
+	Password     string
+	Lastloggedin time.Time
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (AdminUser, error) {
 	row := q.db.QueryRowContext(ctx, createUser,
-		arg.ID,
 		arg.FirstName,
 		arg.LastName,
 		arg.BodyWeight,
