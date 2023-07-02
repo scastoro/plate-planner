@@ -5,8 +5,54 @@
 package database
 
 import (
+	"database/sql/driver"
+	"fmt"
 	"time"
 )
+
+type Intensity string
+
+const (
+	IntensityLow      Intensity = "Low"
+	IntensityMedium   Intensity = "Medium"
+	IntensityHigh     Intensity = "High"
+	IntensityVeryHigh Intensity = "Very High"
+)
+
+func (e *Intensity) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = Intensity(s)
+	case string:
+		*e = Intensity(s)
+	default:
+		return fmt.Errorf("unsupported scan type for Intensity: %T", src)
+	}
+	return nil
+}
+
+type NullIntensity struct {
+	Intensity Intensity
+	Valid     bool // Valid is true if Intensity is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullIntensity) Scan(value interface{}) error {
+	if value == nil {
+		ns.Intensity, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.Intensity.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullIntensity) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.Intensity), nil
+}
 
 type AdminUser struct {
 	ID           int32
@@ -17,4 +63,23 @@ type AdminUser struct {
 	Email        string
 	Password     string
 	Lastloggedin time.Time
+}
+
+type Set struct {
+	ID        int32
+	Exercise  string
+	Count     int32
+	Intensity Intensity
+	Type      string
+	Weight    string
+	WorkoutID int32
+}
+
+type Workout struct {
+	ID            int32
+	StartTime     time.Time
+	Duration      string
+	TotalWeight   string
+	TotalCalories int32
+	UserID        int32
 }
