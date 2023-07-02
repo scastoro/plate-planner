@@ -50,13 +50,13 @@ func (apiCfg *apiConfig) handlerGetUserById(w http.ResponseWriter, r *http.Reque
 	}
 	num, err := strconv.Atoi(id)
 	if err != nil {
-		respondWithError(w, 400, "Error converting param to num")
+		respondWithError(w, 500, "Error converting param to num")
 		return
 	}
 
 	user, err := apiCfg.DB.GetUserById(r.Context(), int32(num))
 	if err != nil {
-		respondWithError(w, 400, fmt.Sprintf("Error getting the user from the database: %v", err))
+		respondWithError(w, 500, fmt.Sprintf("Error getting the user from the database: %v", err))
 		return
 	}
 

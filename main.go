@@ -48,6 +48,10 @@ func main() {
 	v1Router.Post("/users", apiCfg.handlerCreateUser)
 	v1Router.Get("/users", apiCfg.handlerGetUserById)
 
+	v1Router.Post("/workouts", apiCfg.handlerCreateWorkout)
+	v1Router.Get("/workouts", apiCfg.handlerGetWorkoutById)
+	v1Router.Get("/workouts-by-user-id", apiCfg.handlerGetWorkoutsByUserId)
+
 	router.Mount("/v1", v1Router)
 
 	srv := &http.Server{
