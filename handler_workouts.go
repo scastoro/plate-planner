@@ -42,7 +42,7 @@ func (apiCfg *apiConfig) handlerCreateWorkout(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	respondWithJson(w, 200, workout)
+	respondWithJson(w, 200, convertDbWorkoutToWorkout(workout))
 }
 
 func (apiCfg *apiConfig) handlerGetWorkoutById(w http.ResponseWriter, r *http.Request) {
@@ -63,7 +63,7 @@ func (apiCfg *apiConfig) handlerGetWorkoutById(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	respondWithJson(w, 200, workout)
+	respondWithJson(w, 200, convertDbWorkoutToWorkout(workout))
 }
 
 func (apiCfg *apiConfig) handlerGetWorkoutsByUserId(w http.ResponseWriter, r *http.Request) {
@@ -109,5 +109,5 @@ func (apiCfg *apiConfig) handlerGetWorkoutsByUserId(w http.ResponseWriter, r *ht
 		return
 	}
 
-	respondWithJson(w, 200, workouts)
+	respondWithJson(w, 200, convertDbWorkoutsToWorkouts(workouts))
 }
