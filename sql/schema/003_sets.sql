@@ -13,7 +13,9 @@ CREATE TABLE sets (
   intensity intensity NOT NULL,
   "type" TEXT NOT NULL,
   weight DECIMAL NOT NULL,
-  workout_id INT NOT NULL
+  workout_id INT NOT NULL,
+  created_at TIMESTAMP NOT NULL,
+  updated_at TIMESTAMP NOT NULL
 );
 
 ALTER TABLE "sets" ADD FOREIGN KEY ("workout_id") REFERENCES workouts ("id") ON DELETE CASCADE;

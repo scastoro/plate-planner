@@ -73,6 +73,8 @@ type Set struct {
 	Type      string
 	Weight    string
 	WorkoutID int32
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 type Workout struct {

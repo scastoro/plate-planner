@@ -52,6 +52,9 @@ func main() {
 	v1Router.Get("/workouts", apiCfg.handlerGetWorkoutById)
 	v1Router.Get("/workouts-by-user-id", apiCfg.handlerGetWorkoutsByUserId)
 
+	v1Router.Post("/sets", apiCfg.handlerCreateSet)
+	v1Router.Get("/sets-workout-id", apiCfg.handlerGetSetsByWorkoutId)
+
 	router.Mount("/v1", v1Router)
 
 	srv := &http.Server{
