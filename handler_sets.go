@@ -91,3 +91,37 @@ func (apiCfg *apiConfig) handlerGetSetsByWorkoutId(w http.ResponseWriter, r *htt
 
 	respondWithJson(w, 200, convertDbSetsToSets(sets))
 }
+
+func (apiCfg *apiConfig) handlerUpdateSet(w http.ResponseWriter, r *http.Request) {
+	type parameters struct {
+		Exercise  string `json:"exercise"`
+		Count     int32  `json:"count"`
+		Intensity string `json:"intensity"`
+		Type      string `json:"type"`
+		Weight    string `json:"weight"`
+		ID        int32  `json:"set_id"`
+	}
+
+	params := parameters{}
+	err := json.NewDecoder(r.Body).Decode(&params)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "Error parsing json body")
+		return
+	}
+
+	set, err := apiCfg.DB.UpdateSetById(r.Context(), database.UpdateSetByIdParams{
+		Exercise:  params.Exercise,
+		Count:     params.Count,
+		Intensity: database.Intensity(params.Intensity),
+		Type:      params.Type,
+		Weight:    params.Weight,
+		ID:        params.ID,
+		UpdatedAt: time.Now(),
+	})
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Error updating workout: %v", err))
+		return
+	}
+
+	respondWithJson(w, http.StatusOK, convertDbSetToSet(set))
+}

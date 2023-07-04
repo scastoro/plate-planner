@@ -17,3 +17,9 @@ SELECT * FROM workouts where user_id = sqlc.arg('user_id')::int
 ORDER BY sqlc.arg('order_by_col')::text ASC
 LIMIT sqlc.arg('limit')::int
 OFFSET sqlc.arg('offset')::int;
+
+-- name: UpdateWorkoutById :one
+UPDATE workouts SET (duration, total_weight, total_calories) 
+    = ($1, $2, $3)
+WHERE id = $4
+RETURNING *;

@@ -112,3 +112,32 @@ func (apiCfg *apiConfig) handlerGetWorkoutsByUserId(w http.ResponseWriter, r *ht
 
 	respondWithJson(w, 200, convertDbWorkoutsToWorkouts(workouts))
 }
+
+func (apiCfg *apiConfig) handlerUpdateWorkout(w http.ResponseWriter, r *http.Request) {
+	type parameters struct {
+		Duration      string `json:"duration"`
+		TotalWeight   string `json:"total_weight"`
+		TotalCalories int32  `json:"total_calories"`
+		Id            int32  `json:"workout_id"`
+	}
+
+	params := parameters{}
+	err := json.NewDecoder(r.Body).Decode(&params)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "Error parsing json body")
+		return
+	}
+
+	workout, err := apiCfg.DB.UpdateWorkoutById(r.Context(), database.UpdateWorkoutByIdParams{
+		ID:            params.Id,
+		Duration:      params.Duration,
+		TotalWeight:   params.TotalWeight,
+		TotalCalories: params.TotalCalories,
+	})
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Error updating workout: %v", err))
+		return
+	}
+
+	respondWithJson(w, http.StatusOK, convertDbWorkoutToWorkout(workout))
+}

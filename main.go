@@ -59,10 +59,12 @@ func main() {
 	v1Router.Post("/users", apiCfg.handlerCreateUser)
 	v1Router.Get("/users", apiCfg.ValidateTokenMiddleware(apiCfg.handlerGetUserById))
 	v1Router.Get("/users/{userId}/workouts", apiCfg.ValidateTokenMiddleware(apiCfg.handlerGetWorkoutsByUserId))
+	v1Router.Put("/users/{userId}/workouts", apiCfg.ValidateTokenMiddleware(apiCfg.handlerUpdateWorkout))
 
 	v1Router.Post("/workouts", apiCfg.ValidateTokenMiddleware(apiCfg.handlerCreateWorkout))
 	v1Router.Get("/workouts", apiCfg.ValidateTokenMiddleware(apiCfg.handlerGetWorkoutById))
 	v1Router.Get("/workouts/{workoutId}/sets", apiCfg.ValidateTokenMiddleware(apiCfg.handlerGetSetsByWorkoutId))
+	v1Router.Put("/workouts/{workoutId}/sets", apiCfg.ValidateTokenMiddleware(apiCfg.handlerUpdateSet))
 
 	v1Router.Post("/sets", apiCfg.ValidateTokenMiddleware(apiCfg.handlerCreateSet))
 

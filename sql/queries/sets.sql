@@ -17,3 +17,9 @@ SELECT * FROM sets where workout_id = sqlc.arg('workout_id')::int
 ORDER BY sqlc.arg('order_by_col')::text ASC
 LIMIT sqlc.arg('limit')::int
 OFFSET sqlc.arg('offset')::int;
+
+-- name: UpdateSetById :one
+UPDATE sets SET (exercise, count, intensity, type, weight, updated_at) 
+    = ($1, $2, $3, $4, $5, $6)
+WHERE id = $7
+RETURNING *;

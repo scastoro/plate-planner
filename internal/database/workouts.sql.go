@@ -159,3 +159,36 @@ func (q *Queries) GetWorkoutsByUserIdDesc(ctx context.Context, arg GetWorkoutsBy
 	}
 	return items, nil
 }
+
+const updateWorkoutById = `-- name: UpdateWorkoutById :one
+UPDATE workouts SET (duration, total_weight, total_calories) 
+    = ($1, $2, $3)
+WHERE id = $4
+RETURNING id, start_time, duration, total_weight, total_calories, user_id
+`
+
+type UpdateWorkoutByIdParams struct {
+	Duration      string
+	TotalWeight   string
+	TotalCalories int32
+	ID            int32
+}
+
+func (q *Queries) UpdateWorkoutById(ctx context.Context, arg UpdateWorkoutByIdParams) (Workout, error) {
+	row := q.db.QueryRowContext(ctx, updateWorkoutById,
+		arg.Duration,
+		arg.TotalWeight,
+		arg.TotalCalories,
+		arg.ID,
+	)
+	var i Workout
+	err := row.Scan(
+		&i.ID,
+		&i.StartTime,
+		&i.Duration,
+		&i.TotalWeight,
+		&i.TotalCalories,
+		&i.UserID,
+	)
+	return i, err
+}
