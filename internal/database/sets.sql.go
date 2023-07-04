@@ -69,7 +69,7 @@ func (q *Queries) GetSetById(ctx context.Context, id int32) (Set, error) {
 		&i.Weight,
 		&i.WorkoutID,
 		&i.CreatedAt,
-		&i.UpdatedAt, 
+		&i.UpdatedAt,
 	)
 	return i, err
 }
