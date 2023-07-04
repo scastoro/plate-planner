@@ -54,17 +54,17 @@ func main() {
 	v1Router := chi.NewRouter()
 	v1Router.Get("/healthz", handlerReadiness)
 
+	v1Router.Post("/log-in", apiCfg.handlerLoginUser)
+
 	v1Router.Post("/users", apiCfg.handlerCreateUser)
 	v1Router.Get("/users", apiCfg.ValidateTokenMiddleware(apiCfg.handlerGetUserById))
-
-	v1Router.Post("/log-in", apiCfg.handlerLoginUser)
+	v1Router.Get("/users/{userId}/workouts", apiCfg.ValidateTokenMiddleware(apiCfg.handlerGetWorkoutsByUserId))
 
 	v1Router.Post("/workouts", apiCfg.ValidateTokenMiddleware(apiCfg.handlerCreateWorkout))
 	v1Router.Get("/workouts", apiCfg.ValidateTokenMiddleware(apiCfg.handlerGetWorkoutById))
-	v1Router.Get("/workouts-by-user-id", apiCfg.ValidateTokenMiddleware(apiCfg.handlerGetWorkoutsByUserId))
+	v1Router.Get("/workouts/{workoutId}/sets", apiCfg.ValidateTokenMiddleware(apiCfg.handlerGetSetsByWorkoutId))
 
 	v1Router.Post("/sets", apiCfg.ValidateTokenMiddleware(apiCfg.handlerCreateSet))
-	v1Router.Get("/sets-workout-id", apiCfg.ValidateTokenMiddleware(apiCfg.handlerGetSetsByWorkoutId))
 
 	router.Mount("/v1", v1Router)
 

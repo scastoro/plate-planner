@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/go-chi/chi"
 	"github.com/scastoro/plate-planner-api/internal/database"
 )
 
@@ -46,7 +47,7 @@ func (apiCfg *apiConfig) handlerCreateSet(w http.ResponseWriter, r *http.Request
 }
 
 func (apiCfg *apiConfig) handlerGetSetsByWorkoutId(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("workout_id")
+	id := chi.URLParam(r, "workoutId")
 	if id == "" {
 		respondWithError(w, 400, "Error getting the user id from query string")
 		return
