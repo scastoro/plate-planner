@@ -16,6 +16,7 @@ func (apiCfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Reques
 		FirstName string `json:"first_name"`
 		LastName  string `json:"last_name"`
 		Password  string `json:"password"`
+		Email     string `json:"email"`
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -37,7 +38,7 @@ func (apiCfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Reques
 		LastName:     params.LastName,
 		BodyWeight:   "0.0",
 		Username:     fmt.Sprintf("%v%v", params.FirstName, params.LastName),
-		Email:        "test",
+		Email:        params.Email,
 		Password:     hash,
 		Lastloggedin: time.Now(),
 	})
@@ -47,6 +48,41 @@ func (apiCfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Reques
 	}
 
 	respondWithJson(w, 200, convertDbUserToUser(user))
+}
+
+func (apiCfg *apiConfig) handlerLoginUser(w http.ResponseWriter, r *http.Request) {
+	type parameters struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	params := parameters{}
+	err := json.NewDecoder(r.Body).Decode(&params)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, fmt.Sprintf("Error parsing JSON: %v", err))
+		return
+	}
+
+	user, err := apiCfg.DB.GetUserByEmail(r.Context(), params.Email)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "Username or password incorrect")
+		return
+	}
+
+	ok := CheckPassword(params.Password, user.Password)
+	if !ok {
+		respondWithError(w, http.StatusBadRequest, "Username or password incorrect")
+		return
+	}
+
+	userModel := convertDbUserToUser(user)
+	token, err := CreateToken(userModel)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Server error")
+		return
+	}
+
+	respondWithJson(w, http.StatusOK, struct{ token string }{token: token})
 }
 
 func (apiCfg *apiConfig) handlerGetUserById(w http.ResponseWriter, r *http.Request) {
@@ -67,7 +103,7 @@ func (apiCfg *apiConfig) handlerGetUserById(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	respondWithJson(w, 200, user)
+	respondWithJson(w, 200, convertDbUserToUser(user))
 }
 
 func HashPassword(password string) (string, error) {
