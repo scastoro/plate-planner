@@ -108,3 +108,5 @@ func convertDbSetsToSets(dbSets []database.Set) []SetModel {
 
 	return sets
 }
+
+type envelope map[string]interface{}
