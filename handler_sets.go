@@ -57,32 +57,34 @@ func (apiCfg *apiConfig) handlerGetSetsByWorkoutId(w http.ResponseWriter, r *htt
 		respondWithError(w, 500, "Error converting workout id param to num")
 		return
 	}
-	offset := r.URL.Query().Get("offset")
-	if offset == "" {
-		respondWithError(w, 400, "Error getting the offset from query string")
+	count := r.URL.Query().Get("count")
+	if count == "" {
+		respondWithError(w, 400, "Error getting the count from query string")
 		return
 	}
-	parsedOffset, err := strconv.Atoi(offset)
+	parsedCount, err := strconv.Atoi(count)
 	if err != nil {
-		respondWithError(w, 500, "Error converting offset param to num")
+		respondWithError(w, 500, "Error converting count param to num")
 		return
 	}
-	limit := r.URL.Query().Get("limit")
-	if limit == "" {
-		respondWithError(w, 400, "Error getting the limit from query string")
+	page := r.URL.Query().Get("page")
+	if page == "" {
+		respondWithError(w, 400, "Error getting the page from query string")
 		return
 	}
-	parsedLimit, err := strconv.Atoi(limit)
+	parsedPage, err := strconv.Atoi(page)
 	if err != nil {
-		respondWithError(w, 500, "Error converting limit param to num")
+		respondWithError(w, 500, "Error converting page param to num")
 		return
 	}
+
+	offset := parsedCount * (parsedPage - 1)
 
 	sets, err := apiCfg.DB.GetSetsByWorkoutIdDesc(r.Context(), database.GetSetsByWorkoutIdDescParams{
 		WorkoutID:  int32(workoutId),
 		OrderByCol: "created_at",
-		Offset:     int32(parsedOffset),
-		Limit:      int32(parsedLimit),
+		Offset:     int32(offset),
+		Limit:      int32(parsedCount),
 	})
 	if err != nil {
 		respondWithError(w, 500, fmt.Sprintf("Error getting the user from the database: %v", err))
