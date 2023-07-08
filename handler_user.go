@@ -82,7 +82,7 @@ func (apiCfg *apiConfig) handlerLoginUser(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	respondWithJson(w, http.StatusOK, struct{ token string }{token: token})
+	respondWithJson(w, http.StatusOK, envelope{"token": token})
 }
 
 func (apiCfg *apiConfig) handlerGetUserById(w http.ResponseWriter, r *http.Request) {

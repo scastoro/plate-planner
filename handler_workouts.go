@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/http"
 	"strconv"
 	"time"
@@ -112,7 +113,19 @@ func (apiCfg *apiConfig) handlerGetWorkoutsByUserId(w http.ResponseWriter, r *ht
 		return
 	}
 
-	respondWithJson(w, 200, convertDbWorkoutsToWorkouts(workouts))
+	pageData := Metadata{
+		PageSize:    parsedCount,
+		CurrentPage: parsedPage,
+		FirstPage:   1,
+		LastPage:    1,
+	}
+	if len(workouts) > 0 {
+		totalRecords := workouts[0].Count
+		pageData.TotalRecords = int(totalRecords)
+		pageData.LastPage = int(math.Ceil(float64(totalRecords) / float64(parsedCount)))
+	}
+
+	respondWithJson(w, 200, envelope{"metadata": pageData, "records": convertDbWorkoutsToWorkouts(workouts)})
 }
 
 func (apiCfg *apiConfig) handlerUpdateWorkout(w http.ResponseWriter, r *http.Request) {
