@@ -58,7 +58,7 @@ func convertDbWorkoutToWorkout(dbWorkout database.Workout) WorkoutModel {
 	}
 }
 
-func convertDbWorkoutsToWorkouts(dbWorkouts []database.Workout) []WorkoutModel {
+func convertDbWorkoutsToWorkouts(dbWorkouts []database.GetWorkoutsByUserIdDescRow) []WorkoutModel {
 	workouts := []WorkoutModel{}
 	for _, dbWorkout := range dbWorkouts {
 		workouts = append(workouts, WorkoutModel{
@@ -110,3 +110,11 @@ func convertDbSetsToSets(dbSets []database.Set) []SetModel {
 }
 
 type envelope map[string]interface{}
+
+type Metadata struct {
+	CurrentPage  int
+	PageSize     int
+	FirstPage    int
+	LastPage     int
+	TotalRecords int
+}

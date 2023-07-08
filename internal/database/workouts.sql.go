@@ -45,7 +45,9 @@ func (q *Queries) CreateWorkout(ctx context.Context, arg CreateWorkoutParams) (W
 }
 
 const getWorkoutById = `-- name: GetWorkoutById :one
-SELECT id, start_time, duration, total_weight, total_calories, user_id FROM workouts where user_id = $1
+SELECT id, start_time, duration, total_weight, total_calories, user_id 
+FROM workouts 
+WHERE user_id = $1
 `
 
 func (q *Queries) GetWorkoutById(ctx context.Context, userID int32) (Workout, error) {
@@ -63,7 +65,9 @@ func (q *Queries) GetWorkoutById(ctx context.Context, userID int32) (Workout, er
 }
 
 const getWorkoutsByUserIdAsc = `-- name: GetWorkoutsByUserIdAsc :many
-SELECT id, start_time, duration, total_weight, total_calories, user_id FROM workouts where user_id = $1::int
+SELECT count(*) OVER(), id, start_time, duration, total_weight, total_calories, user_id 
+FROM workouts 
+WHERE user_id = $1::int
 ORDER BY $2::text ASC
 LIMIT $4::int
 OFFSET $3::int
@@ -76,7 +80,17 @@ type GetWorkoutsByUserIdAscParams struct {
 	Limit      int32
 }
 
-func (q *Queries) GetWorkoutsByUserIdAsc(ctx context.Context, arg GetWorkoutsByUserIdAscParams) ([]Workout, error) {
+type GetWorkoutsByUserIdAscRow struct {
+	Count         int64
+	ID            int32
+	StartTime     time.Time
+	Duration      string
+	TotalWeight   string
+	TotalCalories int32
+	UserID        int32
+}
+
+func (q *Queries) GetWorkoutsByUserIdAsc(ctx context.Context, arg GetWorkoutsByUserIdAscParams) ([]GetWorkoutsByUserIdAscRow, error) {
 	rows, err := q.db.QueryContext(ctx, getWorkoutsByUserIdAsc,
 		arg.UserID,
 		arg.OrderByCol,
@@ -87,10 +101,11 @@ func (q *Queries) GetWorkoutsByUserIdAsc(ctx context.Context, arg GetWorkoutsByU
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Workout
+	var items []GetWorkoutsByUserIdAscRow
 	for rows.Next() {
-		var i Workout
+		var i GetWorkoutsByUserIdAscRow
 		if err := rows.Scan(
+			&i.Count,
 			&i.ID,
 			&i.StartTime,
 			&i.Duration,
@@ -112,7 +127,9 @@ func (q *Queries) GetWorkoutsByUserIdAsc(ctx context.Context, arg GetWorkoutsByU
 }
 
 const getWorkoutsByUserIdDesc = `-- name: GetWorkoutsByUserIdDesc :many
-SELECT id, start_time, duration, total_weight, total_calories, user_id FROM workouts where user_id = $1::int
+SELECT count(*) OVER(), id, start_time, duration, total_weight, total_calories, user_id 
+FROM workouts 
+WHERE user_id = $1::int
 ORDER BY $2::text DESC
 LIMIT $4::int
 OFFSET $3::int
@@ -125,7 +142,17 @@ type GetWorkoutsByUserIdDescParams struct {
 	Limit      int32
 }
 
-func (q *Queries) GetWorkoutsByUserIdDesc(ctx context.Context, arg GetWorkoutsByUserIdDescParams) ([]Workout, error) {
+type GetWorkoutsByUserIdDescRow struct {
+	Count         int64
+	ID            int32
+	StartTime     time.Time
+	Duration      string
+	TotalWeight   string
+	TotalCalories int32
+	UserID        int32
+}
+
+func (q *Queries) GetWorkoutsByUserIdDesc(ctx context.Context, arg GetWorkoutsByUserIdDescParams) ([]GetWorkoutsByUserIdDescRow, error) {
 	rows, err := q.db.QueryContext(ctx, getWorkoutsByUserIdDesc,
 		arg.UserID,
 		arg.OrderByCol,
@@ -136,10 +163,11 @@ func (q *Queries) GetWorkoutsByUserIdDesc(ctx context.Context, arg GetWorkoutsBy
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Workout
+	var items []GetWorkoutsByUserIdDescRow
 	for rows.Next() {
-		var i Workout
+		var i GetWorkoutsByUserIdDescRow
 		if err := rows.Scan(
+			&i.Count,
 			&i.ID,
 			&i.StartTime,
 			&i.Duration,

@@ -4,16 +4,22 @@ values($1, $2, $3, $4, $5)
 RETURNING *;
 
 -- name: GetWorkoutById :one
-SELECT * FROM workouts where user_id = $1;
+SELECT * 
+FROM workouts 
+WHERE user_id = $1;
 
 -- name: GetWorkoutsByUserIdDesc :many
-SELECT * FROM workouts where user_id = sqlc.arg('user_id')::int
+SELECT count(*) OVER(), * 
+FROM workouts 
+WHERE user_id = sqlc.arg('user_id')::int
 ORDER BY sqlc.arg('order_by_col')::text DESC
 LIMIT sqlc.arg('limit')::int
 OFFSET sqlc.arg('offset')::int;
 
 -- name: GetWorkoutsByUserIdAsc :many
-SELECT * FROM workouts where user_id = sqlc.arg('user_id')::int
+SELECT count(*) OVER(), * 
+FROM workouts 
+WHERE user_id = sqlc.arg('user_id')::int
 ORDER BY sqlc.arg('order_by_col')::text ASC
 LIMIT sqlc.arg('limit')::int
 OFFSET sqlc.arg('offset')::int;
