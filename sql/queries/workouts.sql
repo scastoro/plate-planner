@@ -29,3 +29,10 @@ UPDATE workouts SET (duration, total_weight, total_calories)
     = ($1, $2, $3)
 WHERE id = $4
 RETURNING *;
+
+-- name: GetWorkoutsByIdWithSets :many
+SELECT wo.*, s.*
+FROM workouts AS wo
+JOIN sets AS s 
+ON s.workout_id = wo.id
+WHERE wo.id = $1;
