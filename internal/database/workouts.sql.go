@@ -64,6 +64,71 @@ func (q *Queries) GetWorkoutById(ctx context.Context, userID int32) (Workout, er
 	return i, err
 }
 
+const getWorkoutsByIdWithSets = `-- name: GetWorkoutsByIdWithSets :many
+SELECT wo.id, wo.start_time, wo.duration, wo.total_weight, wo.total_calories, wo.user_id, s.id, s.exercise, s.count, s.intensity, s.type, s.weight, s.workout_id, s.created_at, s.updated_at
+FROM workouts AS wo
+JOIN sets AS s 
+ON s.workout_id = wo.id
+WHERE wo.id = $1
+`
+
+type GetWorkoutsByIdWithSetsRow struct {
+	ID            int32
+	StartTime     time.Time
+	Duration      string
+	TotalWeight   string
+	TotalCalories int32
+	UserID        int32
+	ID_2          int32
+	Exercise      string
+	Count         int32
+	Intensity     Intensity
+	Type          string
+	Weight        string
+	WorkoutID     int32
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+}
+
+func (q *Queries) GetWorkoutsByIdWithSets(ctx context.Context, id int32) ([]GetWorkoutsByIdWithSetsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getWorkoutsByIdWithSets, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetWorkoutsByIdWithSetsRow
+	for rows.Next() {
+		var i GetWorkoutsByIdWithSetsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.StartTime,
+			&i.Duration,
+			&i.TotalWeight,
+			&i.TotalCalories,
+			&i.UserID,
+			&i.ID_2,
+			&i.Exercise,
+			&i.Count,
+			&i.Intensity,
+			&i.Type,
+			&i.Weight,
+			&i.WorkoutID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getWorkoutsByUserIdAsc = `-- name: GetWorkoutsByUserIdAsc :many
 SELECT count(*) OVER(), id, start_time, duration, total_weight, total_calories, user_id 
 FROM workouts 
