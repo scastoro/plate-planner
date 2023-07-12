@@ -65,6 +65,7 @@ func main() {
 	v1Router.Get("/workouts", apiCfg.ValidateTokenMiddleware(apiCfg.handlerGetWorkoutById))
 	v1Router.Get("/workouts/{workoutId}/sets", apiCfg.ValidateTokenMiddleware(apiCfg.handlerGetSetsByWorkoutId))
 	v1Router.Put("/workouts/{workoutId}/sets", apiCfg.ValidateTokenMiddleware(apiCfg.handlerUpdateSet))
+	v1Router.Get("/workouts-with-sets/{workoutId}", apiCfg.ValidateTokenMiddleware(apiCfg.handlerGetWorkoutsByIdWithSets))
 
 	v1Router.Post("/sets", apiCfg.ValidateTokenMiddleware(apiCfg.handlerCreateSet))
 

@@ -4,14 +4,15 @@ import "context"
 
 type WorkoutWithSets struct {
 	Workout
-	Sets []Set
+	Sets         []Set
+	TotalRecords int64
 }
 
-func (q *Queries) GetWorkoutsSetsHelper(ctx context.Context) (WorkoutWithSets, error) {
+func (q *Queries) GetWorkoutsSetsHelper(ctx context.Context, params GetWorkoutsByIdWithSetsParams) (WorkoutWithSets, error) {
 
 	var workoutsWithSets = WorkoutWithSets{}
 
-	workouts, err := q.GetWorkoutsByIdWithSets(ctx, 3)
+	workouts, err := q.GetWorkoutsByIdWithSets(ctx, params)
 	if err != nil {
 		return workoutsWithSets, err
 	}
@@ -28,13 +29,14 @@ func (q *Queries) GetWorkoutsSetsHelper(ctx context.Context) (WorkoutWithSets, e
 		TotalCalories: firstRow.TotalCalories,
 		UserID:        firstRow.UserID,
 	}
+	workoutsWithSets.TotalRecords = firstRow.Count
 
 	sets := []Set{}
 	for _, row := range workouts {
 		sets = append(sets, Set{
 			ID:        row.ID_2,
 			Exercise:  row.Exercise,
-			Count:     row.Count,
+			Count:     row.Count_2,
 			Intensity: row.Intensity,
 			Type:      row.Type,
 			Weight:    row.Weight,

@@ -156,3 +156,49 @@ func (apiCfg *apiConfig) handlerUpdateWorkout(w http.ResponseWriter, r *http.Req
 
 	respondWithJson(w, http.StatusOK, convertDbWorkoutToWorkout(workout))
 }
+
+func (apiCfg *apiConfig) handlerGetWorkoutsByIdWithSets(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "workoutId")
+	if id == "" {
+		respondWithError(w, 400, "Error getting the user id from query string")
+		return
+	}
+	workoutId, err := strconv.Atoi(id)
+	if err != nil {
+		respondWithError(w, 500, "Error converting user id param to num")
+		return
+	}
+	count := r.URL.Query().Get("count")
+	if count == "" {
+		respondWithError(w, 400, "Error getting the count from query string")
+		return
+	}
+	parsedCount, err := strconv.Atoi(count)
+	if err != nil {
+		respondWithError(w, 500, "Error converting count param to num")
+		return
+	}
+	page := r.URL.Query().Get("page")
+	if page == "" {
+		respondWithError(w, 400, "Error getting the page from query string")
+		return
+	}
+	parsedPage, err := strconv.Atoi(page)
+	if err != nil {
+		respondWithError(w, 500, "Error converting page param to num")
+		return
+	}
+	offset := parsedCount * (parsedPage - 1)
+
+	workoutWithSets, err := apiCfg.DB.GetWorkoutsSetsHelper(r.Context(), database.GetWorkoutsByIdWithSetsParams{
+		ID:     int32(workoutId),
+		Limit:  int32(parsedCount),
+		Offset: int32(offset),
+	})
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Error getting workouts with sets: %v", err))
+		return
+	}
+
+	respondWithJson(w, http.StatusOK, workoutWithSets)
+}
