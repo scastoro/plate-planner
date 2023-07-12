@@ -65,14 +65,24 @@ func (q *Queries) GetWorkoutById(ctx context.Context, userID int32) (Workout, er
 }
 
 const getWorkoutsByIdWithSets = `-- name: GetWorkoutsByIdWithSets :many
-SELECT wo.id, wo.start_time, wo.duration, wo.total_weight, wo.total_calories, wo.user_id, s.id, s.exercise, s.count, s.intensity, s.type, s.weight, s.workout_id, s.created_at, s.updated_at
+SELECT Count(*) OVER(), wo.id, wo.start_time, wo.duration, wo.total_weight, wo.total_calories, wo.user_id, s.id, s.exercise, s.count, s.intensity, s.type, s.weight, s.workout_id, s.created_at, s.updated_at
 FROM workouts AS wo
 JOIN sets AS s 
 ON s.workout_id = wo.id
 WHERE wo.id = $1
+ORDER BY wo.id DESC
+LIMIT $2
+OFFSET $3
 `
 
+type GetWorkoutsByIdWithSetsParams struct {
+	ID     int32
+	Limit  int32
+	Offset int32
+}
+
 type GetWorkoutsByIdWithSetsRow struct {
+	Count         int64
 	ID            int32
 	StartTime     time.Time
 	Duration      string
@@ -81,7 +91,7 @@ type GetWorkoutsByIdWithSetsRow struct {
 	UserID        int32
 	ID_2          int32
 	Exercise      string
-	Count         int32
+	Count_2       int32
 	Intensity     Intensity
 	Type          string
 	Weight        string
@@ -90,8 +100,8 @@ type GetWorkoutsByIdWithSetsRow struct {
 	UpdatedAt     time.Time
 }
 
-func (q *Queries) GetWorkoutsByIdWithSets(ctx context.Context, id int32) ([]GetWorkoutsByIdWithSetsRow, error) {
-	rows, err := q.db.QueryContext(ctx, getWorkoutsByIdWithSets, id)
+func (q *Queries) GetWorkoutsByIdWithSets(ctx context.Context, arg GetWorkoutsByIdWithSetsParams) ([]GetWorkoutsByIdWithSetsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getWorkoutsByIdWithSets, arg.ID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -100,6 +110,7 @@ func (q *Queries) GetWorkoutsByIdWithSets(ctx context.Context, id int32) ([]GetW
 	for rows.Next() {
 		var i GetWorkoutsByIdWithSetsRow
 		if err := rows.Scan(
+			&i.Count,
 			&i.ID,
 			&i.StartTime,
 			&i.Duration,
@@ -108,7 +119,7 @@ func (q *Queries) GetWorkoutsByIdWithSets(ctx context.Context, id int32) ([]GetW
 			&i.UserID,
 			&i.ID_2,
 			&i.Exercise,
-			&i.Count,
+			&i.Count_2,
 			&i.Intensity,
 			&i.Type,
 			&i.Weight,
