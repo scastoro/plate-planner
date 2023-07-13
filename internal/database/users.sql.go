@@ -94,7 +94,10 @@ func (q *Queries) GetUserById(ctx context.Context, id int32) (AdminUser, error) 
 }
 
 const getUserByIdWithPerms = `-- name: GetUserByIdWithPerms :many
-SELECT u.id, u.first_name, u.last_name, u.username, r.name, p.resource, p.action
+SELECT u.id, u.first_name, u.last_name, u.body_weight, u.username, u.email, u.password, u.lastloggedin, u.role_id,
+ r.name as role, 
+ p.resource, 
+ p.action as permission
 FROM "Admin"."Users" as u
 JOIN roles as r
 ON u.role_id = r.id
@@ -106,13 +109,18 @@ WHERE u.id = $1
 `
 
 type GetUserByIdWithPermsRow struct {
-	ID        int32
-	FirstName string
-	LastName  string
-	Username  string
-	Name      string
-	Resource  string
-	Action    Crud
+	ID           int32
+	FirstName    string
+	LastName     string
+	BodyWeight   string
+	Username     string
+	Email        string
+	Password     string
+	Lastloggedin time.Time
+	RoleID       int32
+	Role         string
+	Resource     string
+	Permission   Crud
 }
 
 func (q *Queries) GetUserByIdWithPerms(ctx context.Context, id int32) ([]GetUserByIdWithPermsRow, error) {
@@ -128,10 +136,15 @@ func (q *Queries) GetUserByIdWithPerms(ctx context.Context, id int32) ([]GetUser
 			&i.ID,
 			&i.FirstName,
 			&i.LastName,
+			&i.BodyWeight,
 			&i.Username,
-			&i.Name,
+			&i.Email,
+			&i.Password,
+			&i.Lastloggedin,
+			&i.RoleID,
+			&i.Role,
 			&i.Resource,
-			&i.Action,
+			&i.Permission,
 		); err != nil {
 			return nil, err
 		}

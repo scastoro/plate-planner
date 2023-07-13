@@ -8,11 +8,13 @@ import (
 )
 
 type UserModel struct {
-	ID         int32
-	Name       string
-	BodyWeight string
-	Username   string
-	Email      string
+	ID          int32
+	Name        string
+	BodyWeight  string
+	Username    string
+	Email       string
+	Role        string
+	Permissions []database.Permission
 }
 
 func convertDbUserToUser(dbUser database.AdminUser) UserModel {

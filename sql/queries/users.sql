@@ -10,12 +10,16 @@ SELECT * FROM "Admin"."Users" where id = $1;
 SELECT * FROM "Admin"."Users" where email = $1;
 
 -- name: GetUserByIdWithPerms :many
-SELECT u.id, u.first_name, u.last_name, u.username, r.name, p.resource, p.action
+SELECT 
+    u.*,
+    r.name as role, 
+    p.resource, 
+    p.action as permission
 FROM "Admin"."Users" as u
 JOIN roles as r
-ON u.role_id = r.id
+    ON u.role_id = r.id
 JOIN rolesPermissions as rp
-ON u.role_id = rp.role_id
+    ON u.role_id = rp.role_id
 JOIN permissions as p
-ON p.id = rp.permission_id
+    ON p.id = rp.permission_id
 WHERE u.id = $1;

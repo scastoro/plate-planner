@@ -49,3 +49,49 @@ func (q *Queries) GetWorkoutsSetsHelper(ctx context.Context, params GetWorkoutsB
 	return workoutsWithSets, nil
 
 }
+
+type UserWithPermissions struct {
+	AdminUser
+	Role        string
+	Permissions []Permission
+}
+
+func (q *Queries) GetUserWithPermissions(ctx context.Context, id int32) (UserWithPermissions, error) {
+	userWithPermissions := UserWithPermissions{}
+
+	users, err := q.GetUserByIdWithPerms(ctx, id)
+	if err != nil {
+		return UserWithPermissions{}, err
+	}
+	if len(users) < 1 {
+		return UserWithPermissions{}, nil
+	}
+
+	firstRow := users[0]
+
+	userWithPermissions.Role = firstRow.Role
+	userWithPermissions.AdminUser = AdminUser{
+		FirstName:    firstRow.FirstName,
+		LastName:     firstRow.LastName,
+		BodyWeight:   firstRow.BodyWeight,
+		ID:           firstRow.ID,
+		RoleID:       firstRow.RoleID,
+		Lastloggedin: firstRow.Lastloggedin,
+		Email:        firstRow.Email,
+		Password:     firstRow.Password,
+		Username:     firstRow.Username,
+	}
+
+	permissions := []Permission{}
+
+	for _, user := range users {
+		permissions = append(permissions, Permission{
+			Action:   user.Permission,
+			Resource: user.Resource,
+		})
+	}
+
+	userWithPermissions.Permissions = permissions
+
+	return userWithPermissions, nil
+}
