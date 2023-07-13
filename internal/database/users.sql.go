@@ -13,7 +13,7 @@ import (
 const createUser = `-- name: CreateUser :one
 INSERT INTO "Admin"."Users" (first_name, last_name, body_weight, username, email, password, lastLoggedIn)
 values($1, $2, $3, $4, $5, $6, $7)
-RETURNING id, first_name, last_name, body_weight, username, email, password, lastloggedin
+RETURNING id, first_name, last_name, body_weight, username, email, password, lastloggedin, role_id
 `
 
 type CreateUserParams struct {
@@ -46,12 +46,13 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (AdminUs
 		&i.Email,
 		&i.Password,
 		&i.Lastloggedin,
+		&i.RoleID,
 	)
 	return i, err
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, first_name, last_name, body_weight, username, email, password, lastloggedin FROM "Admin"."Users" where email = $1
+SELECT id, first_name, last_name, body_weight, username, email, password, lastloggedin, role_id FROM "Admin"."Users" where email = $1
 `
 
 func (q *Queries) GetUserByEmail(ctx context.Context, email string) (AdminUser, error) {
@@ -66,12 +67,13 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (AdminUser, 
 		&i.Email,
 		&i.Password,
 		&i.Lastloggedin,
+		&i.RoleID,
 	)
 	return i, err
 }
 
 const getUserById = `-- name: GetUserById :one
-SELECT id, first_name, last_name, body_weight, username, email, password, lastloggedin FROM "Admin"."Users" where id = $1
+SELECT id, first_name, last_name, body_weight, username, email, password, lastloggedin, role_id FROM "Admin"."Users" where id = $1
 `
 
 func (q *Queries) GetUserById(ctx context.Context, id int32) (AdminUser, error) {
@@ -86,6 +88,60 @@ func (q *Queries) GetUserById(ctx context.Context, id int32) (AdminUser, error) 
 		&i.Email,
 		&i.Password,
 		&i.Lastloggedin,
+		&i.RoleID,
 	)
 	return i, err
+}
+
+const getUserByIdWithPerms = `-- name: GetUserByIdWithPerms :many
+SELECT u.id, u.first_name, u.last_name, u.username, r.name, p.resource, p.action
+FROM "Admin"."Users" as u
+JOIN roles as r
+ON u.role_id = r.id
+JOIN rolesPermissions as rp
+ON u.role_id = rp.role_id
+JOIN permissions as p
+ON p.id = rp.permission_id
+WHERE u.id = $1
+`
+
+type GetUserByIdWithPermsRow struct {
+	ID        int32
+	FirstName string
+	LastName  string
+	Username  string
+	Name      string
+	Resource  string
+	Action    Crud
+}
+
+func (q *Queries) GetUserByIdWithPerms(ctx context.Context, id int32) ([]GetUserByIdWithPermsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getUserByIdWithPerms, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetUserByIdWithPermsRow
+	for rows.Next() {
+		var i GetUserByIdWithPermsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.FirstName,
+			&i.LastName,
+			&i.Username,
+			&i.Name,
+			&i.Resource,
+			&i.Action,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

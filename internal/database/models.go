@@ -5,10 +5,55 @@
 package database
 
 import (
+	"database/sql"
 	"database/sql/driver"
 	"fmt"
 	"time"
 )
+
+type Crud string
+
+const (
+	CrudCREATE Crud = "CREATE"
+	CrudREAD   Crud = "READ"
+	CrudUPDATE Crud = "UPDATE"
+	CrudDELETE Crud = "DELETE"
+)
+
+func (e *Crud) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = Crud(s)
+	case string:
+		*e = Crud(s)
+	default:
+		return fmt.Errorf("unsupported scan type for Crud: %T", src)
+	}
+	return nil
+}
+
+type NullCrud struct {
+	Crud  Crud
+	Valid bool // Valid is true if Crud is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullCrud) Scan(value interface{}) error {
+	if value == nil {
+		ns.Crud, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.Crud.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullCrud) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.Crud), nil
+}
 
 type Intensity string
 
@@ -63,6 +108,24 @@ type AdminUser struct {
 	Email        string
 	Password     string
 	Lastloggedin time.Time
+	RoleID       int32
+}
+
+type Permission struct {
+	ID       int32
+	Resource string
+	Action   Crud
+}
+
+type Role struct {
+	ID   int32
+	Name string
+}
+
+type Rolespermission struct {
+	ID           int32
+	RoleID       sql.NullInt32
+	PermissionID sql.NullInt32
 }
 
 type Set struct {

@@ -118,3 +118,7 @@ type Metadata struct {
 	LastPage     int
 	TotalRecords int
 }
+
+type key int
+
+const UserKey key = 0
