@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"os"
@@ -39,7 +40,16 @@ func (apiCfg *apiConfig) ValidateTokenMiddleware(next http.HandlerFunc) http.Han
 			respondWithError(w, http.StatusUnauthorized, "Not authorized to view this resource")
 			return
 		}
-		if token.Valid {
+
+		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+			user, ok := claims["user"].(UserModel)
+			if !ok {
+				respondWithError(w, http.StatusUnauthorized, "Not authorized to view this resource")
+				return
+			}
+
+			ctx := context.WithValue(req.Context(), UserKey, user)
+			req = req.WithContext(ctx)
 			next(w, req)
 		} else {
 			respondWithError(w, http.StatusUnauthorized, "Not authorized to view this resource")
