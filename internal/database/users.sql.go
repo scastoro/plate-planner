@@ -226,3 +226,45 @@ func (q *Queries) GetUserByIdWithPerms(ctx context.Context, id int32) ([]GetUser
 	}
 	return items, nil
 }
+
+const updateUserById = `-- name: UpdateUserById :one
+UPDATE "Admin"."Users" SET (first_name, last_name, body_weight, username, email, password)
+    = ($1, $2, $3, $4, $5, $6)
+WHERE id = $7
+RETURNING id, first_name, last_name, body_weight, username, email, password, lastloggedin, role_id
+`
+
+type UpdateUserByIdParams struct {
+	FirstName  string
+	LastName   string
+	BodyWeight string
+	Username   string
+	Email      string
+	Password   string
+	ID         int32
+}
+
+func (q *Queries) UpdateUserById(ctx context.Context, arg UpdateUserByIdParams) (AdminUser, error) {
+	row := q.db.QueryRowContext(ctx, updateUserById,
+		arg.FirstName,
+		arg.LastName,
+		arg.BodyWeight,
+		arg.Username,
+		arg.Email,
+		arg.Password,
+		arg.ID,
+	)
+	var i AdminUser
+	err := row.Scan(
+		&i.ID,
+		&i.FirstName,
+		&i.LastName,
+		&i.BodyWeight,
+		&i.Username,
+		&i.Email,
+		&i.Password,
+		&i.Lastloggedin,
+		&i.RoleID,
+	)
+	return i, err
+}

@@ -9,6 +9,12 @@ SELECT * FROM "Admin"."Users" where id = $1;
 -- name: GetUserByEmail :one
 SELECT * FROM "Admin"."Users" where email = $1;
 
+-- name: UpdateUserById :one
+UPDATE "Admin"."Users" SET (first_name, last_name, body_weight, username, email, password)
+    = ($1, $2, $3, $4, $5, $6)
+WHERE id = $7
+RETURNING *;
+
 -- name: GetUserByIdWithPerms :many
 SELECT 
     u.*,
