@@ -23,3 +23,18 @@ JOIN rolesPermissions as rp
 JOIN permissions as p
     ON p.id = rp.permission_id
 WHERE u.id = $1;
+
+-- name: GetUserByEmailWithPerms :many
+SELECT 
+    u.*,
+    r.name as role, 
+    p.resource, 
+    p.action as permission
+FROM "Admin"."Users" as u
+JOIN roles as r
+    ON u.role_id = r.id
+JOIN rolesPermissions as rp
+    ON u.role_id = rp.role_id
+JOIN permissions as p
+    ON p.id = rp.permission_id
+WHERE u.email = $1;

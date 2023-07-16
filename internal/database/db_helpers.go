@@ -95,3 +95,43 @@ func (q *Queries) GetUserWithPermissions(ctx context.Context, id int32) (UserWit
 
 	return userWithPermissions, nil
 }
+
+func (q *Queries) GetUserWithPermissionsByEmail(ctx context.Context, email string) (UserWithPermissions, error) {
+	userWithPermissions := UserWithPermissions{}
+
+	users, err := q.GetUserByEmailWithPerms(ctx, email)
+	if err != nil {
+		return UserWithPermissions{}, err
+	}
+	if len(users) < 1 {
+		return UserWithPermissions{}, nil
+	}
+
+	firstRow := users[0]
+
+	userWithPermissions.Role = firstRow.Role
+	userWithPermissions.AdminUser = AdminUser{
+		FirstName:    firstRow.FirstName,
+		LastName:     firstRow.LastName,
+		BodyWeight:   firstRow.BodyWeight,
+		ID:           firstRow.ID,
+		RoleID:       firstRow.RoleID,
+		Lastloggedin: firstRow.Lastloggedin,
+		Email:        firstRow.Email,
+		Password:     firstRow.Password,
+		Username:     firstRow.Username,
+	}
+
+	permissions := []Permission{}
+
+	for _, user := range users {
+		permissions = append(permissions, Permission{
+			Action:   user.Permission,
+			Resource: user.Resource,
+		})
+	}
+
+	userWithPermissions.Permissions = permissions
+
+	return userWithPermissions, nil
+}

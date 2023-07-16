@@ -72,6 +72,73 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (AdminUser, 
 	return i, err
 }
 
+const getUserByEmailWithPerms = `-- name: GetUserByEmailWithPerms :many
+SELECT 
+    u.id, u.first_name, u.last_name, u.body_weight, u.username, u.email, u.password, u.lastloggedin, u.role_id,
+    r.name as role, 
+    p.resource, 
+    p.action as permission
+FROM "Admin"."Users" as u
+JOIN roles as r
+    ON u.role_id = r.id
+JOIN rolesPermissions as rp
+    ON u.role_id = rp.role_id
+JOIN permissions as p
+    ON p.id = rp.permission_id
+WHERE u.email = $1
+`
+
+type GetUserByEmailWithPermsRow struct {
+	ID           int32
+	FirstName    string
+	LastName     string
+	BodyWeight   string
+	Username     string
+	Email        string
+	Password     string
+	Lastloggedin time.Time
+	RoleID       int32
+	Role         string
+	Resource     string
+	Permission   Crud
+}
+
+func (q *Queries) GetUserByEmailWithPerms(ctx context.Context, email string) ([]GetUserByEmailWithPermsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getUserByEmailWithPerms, email)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetUserByEmailWithPermsRow
+	for rows.Next() {
+		var i GetUserByEmailWithPermsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.FirstName,
+			&i.LastName,
+			&i.BodyWeight,
+			&i.Username,
+			&i.Email,
+			&i.Password,
+			&i.Lastloggedin,
+			&i.RoleID,
+			&i.Role,
+			&i.Resource,
+			&i.Permission,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getUserById = `-- name: GetUserById :one
 SELECT id, first_name, last_name, body_weight, username, email, password, lastloggedin, role_id FROM "Admin"."Users" where id = $1
 `
@@ -94,17 +161,18 @@ func (q *Queries) GetUserById(ctx context.Context, id int32) (AdminUser, error) 
 }
 
 const getUserByIdWithPerms = `-- name: GetUserByIdWithPerms :many
-SELECT u.id, u.first_name, u.last_name, u.body_weight, u.username, u.email, u.password, u.lastloggedin, u.role_id,
- r.name as role, 
- p.resource, 
- p.action as permission
+SELECT 
+    u.id, u.first_name, u.last_name, u.body_weight, u.username, u.email, u.password, u.lastloggedin, u.role_id,
+    r.name as role, 
+    p.resource, 
+    p.action as permission
 FROM "Admin"."Users" as u
 JOIN roles as r
-ON u.role_id = r.id
+    ON u.role_id = r.id
 JOIN rolesPermissions as rp
-ON u.role_id = rp.role_id
+    ON u.role_id = rp.role_id
 JOIN permissions as p
-ON p.id = rp.permission_id
+    ON p.id = rp.permission_id
 WHERE u.id = $1
 `
 
