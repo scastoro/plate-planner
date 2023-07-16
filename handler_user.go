@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/go-chi/chi"
 	"github.com/scastoro/plate-planner-api/internal/database"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -114,4 +115,25 @@ func HashPassword(password string) (string, error) {
 func CheckPassword(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
+}
+
+func (apiCfg apiConfig) handlerGetUserByIdWithPerms(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "userId")
+	if id == "" {
+		respondWithError(w, 400, "Error getting the user id from query string")
+		return
+	}
+	userId, err := strconv.Atoi(id)
+	if err != nil {
+		respondWithError(w, 500, "Error converting user id param to num")
+		return
+	}
+
+	user, err := apiCfg.DB.GetUserWithPermissions(r.Context(), int32(userId))
+	if err != nil {
+		respondWithError(w, 500, fmt.Sprintf("Error getting the user from the database: %v", err))
+		return
+	}
+
+	respondWithJson(w, http.StatusOK, convertDbUserWithPermsToUserWithPerms(user))
 }

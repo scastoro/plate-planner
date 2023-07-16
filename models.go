@@ -126,7 +126,6 @@ type key int
 const UserKey key = 0
 
 type PermissionModel struct {
-	ID       int32
 	Resource string
 	Action   database.Crud
 }
@@ -145,7 +144,6 @@ func convertDbUserWithPermsToUserWithPerms(dbUser database.UserWithPermissions) 
 
 	for _, perm := range dbUser.Permissions {
 		permissions = append(permissions, PermissionModel{
-			ID:       perm.ID,
 			Resource: perm.Resource,
 			Action:   perm.Action,
 		})

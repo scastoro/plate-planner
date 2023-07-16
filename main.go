@@ -58,6 +58,7 @@ func main() {
 
 	v1Router.Post("/users", apiCfg.handlerCreateUser)
 	v1Router.Get("/users", apiCfg.ValidateTokenMiddleware(apiCfg.handlerGetUserById))
+	v1Router.Get("/users/{userId}", apiCfg.handlerGetUserByIdWithPerms)
 	v1Router.Get("/users/{userId}/workouts", apiCfg.ValidateTokenMiddleware(apiCfg.handlerGetWorkoutsByUserId))
 	v1Router.Put("/users/{userId}/workouts", apiCfg.ValidateTokenMiddleware(apiCfg.handlerUpdateWorkout))
 
