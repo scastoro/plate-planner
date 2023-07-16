@@ -14,7 +14,7 @@ type UserModel struct {
 	Username    string
 	Email       string
 	Role        string
-	Permissions []database.Permission
+	Permissions []PermissionModel
 }
 
 func convertDbUserToUser(dbUser database.AdminUser) UserModel {
@@ -124,3 +124,34 @@ type Metadata struct {
 type key int
 
 const UserKey key = 0
+
+type PermissionModel struct {
+	ID       int32
+	Resource string
+	Action   database.Crud
+}
+
+func convertDbUserWithPermsToUserWithPerms(dbUser database.UserWithPermissions) UserModel {
+	userWithPerm := UserModel{
+		ID:         dbUser.ID,
+		Name:       fmt.Sprintf("%v %v", dbUser.FirstName, dbUser.LastName),
+		BodyWeight: dbUser.BodyWeight,
+		Username:   dbUser.Username,
+		Email:      dbUser.Email,
+		Role:       dbUser.Role,
+	}
+
+	permissions := []PermissionModel{}
+
+	for _, perm := range dbUser.Permissions {
+		permissions = append(permissions, PermissionModel{
+			ID:       perm.ID,
+			Resource: perm.Resource,
+			Action:   perm.Action,
+		})
+	}
+
+	userWithPerm.Permissions = permissions
+
+	return userWithPerm
+}

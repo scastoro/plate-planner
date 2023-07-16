@@ -63,7 +63,7 @@ func (apiCfg *apiConfig) handlerLoginUser(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	user, err := apiCfg.DB.GetUserByEmail(r.Context(), params.Email)
+	user, err := apiCfg.DB.GetUserWithPermissionsByEmail(r.Context(), params.Email)
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "Username or password incorrect")
 		return
@@ -75,7 +75,7 @@ func (apiCfg *apiConfig) handlerLoginUser(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	userModel := convertDbUserToUser(user)
+	userModel := convertDbUserWithPermsToUserWithPerms(user)
 	token, err := CreateToken(userModel)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Server error")
